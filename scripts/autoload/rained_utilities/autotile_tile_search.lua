@@ -480,7 +480,7 @@ function autotile:tileRect(layer, left, top, right, bottom, forceModifier)
 
 				-- Tiles can't be shortcut entrances, so any tile will have to just not care here.
 				if (cell_geo == GEO_TYPE.SHORTCUT_ENTRANCE) then cell_geo = -1 end
-				table.insert(search_settings.specs[l], cell_geo)
+				table.insert(search_settings.specs[l - layer + 1], cell_geo)
 
 			end
 		end
