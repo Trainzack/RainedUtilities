@@ -423,6 +423,7 @@ autotile.uiHook = function()
 		search_settings.specs = nil
 	end
 
+	imgui.SeparatorText("Specs");
 	if (search_settings.specs == nil) then
 		imgui.Text("No specs are loaded.");
 		return;
@@ -440,6 +441,7 @@ autotile.uiHook = function()
 		search_settings.change = false;
 	end
 
+	imgui.SeparatorText("Results");
 	imgui.Text(("Matches: %s / %s"):format(#results.tiles_matched, results.count_tiles_checked));
 
 	protectedBegin(
