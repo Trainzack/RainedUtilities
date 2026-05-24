@@ -47,7 +47,7 @@ local all_tiles = nil
 
 local function setupTiles()
 
-	print("Setup Tiles")
+	print("Tile Search: Begin Setup Tiles")
 	all_tiles = {}
 	-- TODO: Why do tile methods fail?
 	local cats = rained.props.getTileAsPropCategories()
@@ -64,7 +64,7 @@ local function setupTiles()
 		end
 	end
 
-	print(("Got %s tiles."):format(#all_tiles))
+	print(("Tile Search: Got %s tiles."):format(#all_tiles))
 
 end
 
@@ -160,7 +160,7 @@ local function protectedBegin(begin, inner, catch, finally, always_end)
 	end
 	return s
 end
-
+--[[
 local function handleConfigTable()
 
 	local change = false
@@ -215,6 +215,7 @@ local function handleConfigTable()
 	return change
 
 end
+--]]
 
 local box_drawings = {
 	--[[,
@@ -255,7 +256,7 @@ local function handleSpecsTable()
 	local row_count = search_settings.specs.height
 
 	local column_width = 20
-	if (do_l2) then column_width = 40 end
+	if (do_l2) then column_width = 50 end
 	--print(("Specs Table: (%s x %s)"):format(column_count, row_count))
 
 	local columnFlags = imgui.TableColumnFlags_WidthFixed | imgui.TableColumnFlags_NoResize | imgui.TableColumnFlags_NoSort;
@@ -279,7 +280,7 @@ local function handleSpecsTable()
 			local cell_text = ""
 
 			if (do_l2) then
-				cell_text = ("%s [%s]"):format(get_geo_symbol(search_settings.specs[1][curIndex]), get_geo_symbol(search_settings.specs[2][curIndex]))
+				cell_text = ("%s (%s)"):format(get_geo_symbol(search_settings.specs[1][curIndex]), get_geo_symbol(search_settings.specs[2][curIndex]))
 			else
 				cell_text = ("%s"):format(get_geo_symbol(search_settings.specs[1][curIndex]))
 			end
@@ -406,12 +407,13 @@ end
 
 rained.onUpdate(updateTileSearch);
 --]]
-local autotile = rained.tiles.createAutotile("Tile Search Geometry", "Util")
+local autotile = rained.tiles.createAutotile("Tile Search Geometry", "Utilities")
 
 
 autotile.type = "rect"
+autotile.autoHistory = false
 autotile.uiHook = function()
-	imgui.TextWrapped("Select a region, and the Tile search will update to only include tiles that fit that rectangle specifically.")
+	imgui.TextWrapped("Select a region, and the Tile Search will update to only include tiles that exactly fit the geometry in the selected region.")
 
 	s, search_settings.include_l2_geo = imgui.Checkbox("Include Layer Behind", search_settings.include_l2_geo)
 
