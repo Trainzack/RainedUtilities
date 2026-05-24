@@ -6,29 +6,22 @@ local imgui = require("imgui")
 
 local show_tile_search = true
 
+local SELECTION_MODE = {
+	TILE_FITS_IN_RECT = 1,
+	TILE_MATCHES_RECT = 2,
+	RECT_FITS_IN_TILE = 3
+}
+
 local search_settings = {
-	width = {
-		name = "Tile Width",
-		min = 1,
-		max = 10,
-		max_max = math.huge,
-	},
-	height = {
-		name = "Tile Height",
-		min = 1,
-		max = 10,
-		max_max = math.huge,
-	},
-	depth = {
-		name = "Tile Depth",
-		min = 1,
-		max = 2,
-		max_max = 2,
-	},
-	--TODO set specs to nil
-	--specs ={{5, 5, 1, 1}, width=2, height=2},
+	-- If we have a search: A table containing tables of numbers. Each table should match the specs array of the search region.
+	-- There will be one specs table if we're searching one level, and two specs tables if we're searching two levels.
 	specs = nil,
+
+	-- User settings
 	include_l2_geo = false,
+	selection_mode = SELECTION_MODE.TILE_MATCHES_RECT,
+
+	-- Records whether there's a change that will require us to do a search
 	change = true,
 }
 
@@ -160,62 +153,6 @@ local function protectedBegin(begin, inner, catch, finally, always_end)
 	end
 	return s
 end
---[[
-local function handleConfigTable()
-
-	local change = false
-
-	local columnFlags = imgui.TableColumnFlags_WidthStretch | imgui.TableColumnFlags_NoResize | imgui.TableColumnFlags_NoSort;
-	imgui.TableSetupColumn("Parameter", columnFlags, 60);
-	imgui.TableSetupColumn("Minimum", columnFlags, 50);
-	imgui.TableSetupColumn("Maximum", columnFlags, 50);
-	imgui.TableHeadersRow();
--- 					imgui.TableHeader("Parameter");
--- 					imgui.TableNextColumn();
--- 					imgui.TableHeader("Minimum");
--- 					imgui.TableNextColumn();
--- 					imgui.TableHeader("Maximum");
--- 					imgui.TableNextColumn();
-
-	for i = 1, #search_settings.params do
-		local param = search_settings.params[i]
-		imgui.TableNextRow();
-		imgui.TableNextColumn();
-		imgui.Text(param.name);
-		imgui.TableNextColumn();
-
-		imgui.PushItemWidth(-0.00001);
-		local _a, new_min = imgui.InputFloat(("Control Min %s"):format(param.name), param.min, 1, 5, "%.0f")
-		imgui.PopItemWidth();
-		imgui.TableNextColumn();
-
-		imgui.PushItemWidth(-0.00001);
-		local _b, new_max = imgui.InputFloat(("Control Max %s"):format(param.name), param.max, 1, 5, "%.0f")
-		imgui.PopItemWidth();
-
-		local min_changed = new_min ~= param.min;
-		local max_changed = new_max ~= param.max;
-
-		if (min_changed) then
-			param.min = new_min
-			param.max = math.max(new_min, param.max)
-			change = true
-		end
-		if (max_changed) then
-			param.max = new_max
-			param.min = math.min(new_max, param.min)
-			change = true
-		end
-
-		param.min = math.min(param.max_max, math.max(1, param.min))
-		param.max = math.min(param.max_max, math.max(1, param.max))
-
-	end
-
-	return change
-
-end
---]]
 
 local box_drawings = {
 	--[[,
@@ -365,78 +302,6 @@ local function handleResultsTable()
 	end
 end
 
---[[
-local function updateTileSearch()
-
-	if (not show_tile_search) then return end
-
-	local close_button = false
-	protectedBegin(
-		function() return imgui.Begin("Tile Search", show_tile_search) end,
-		function(p_open)
-			show_tile_search = p_open
-
-			local any_changes = search_settings.change;
-			search_settings.change = false;
-
-			protectedBegin(
-				function() return imgui.BeginTable("Tile Search Controls", 3) end,
-				function() if (handleConfigTable()) then any_changes = true end; end,
-				nil,
-				function() return imgui.EndTable() end, false
-			)
-
-			if (search_settings.specs == nil) then
-				imgui.Text("No specs are loaded.");
-				return;
-			else
-				protectedBegin(
-					function() return imgui.BeginTable("Cell Specs", search_settings.specs.width + 1) end,
-					function() handleSpecsTable() end,
-					nil,
-					function() return imgui.EndTable() end, false
-				)
-			end
-
-			if (any_changes) then getResults() end
-
-			imgui.Text(("Matches: %s / %s"):format(#results.tiles_matched, results.count_tiles_checked));
-			--imgui.Text(("-- Matches: %s"):format());
-			--imgui.Text(("-- Exclusions: %s"):format(results.count_tiles_excluded));
-
-			protectedBegin(
-				function() return imgui.BeginTable("Tile Search Results", 5, imgui.TableFlags_ScrollY) end,
-				function()
-					handleResultsTable()
-				end,
-				nil,
-				function() return imgui.EndTable() end, true
-			)
-
-			--_r, new_selection_index, new_selection_name = imgui.ListBox("Results", 0, results.tiles_matched_names, #results.tiles_matched_names)
-
-		end,
-		function(err)
-			print(("Tile Search: Ran into error [%s]. I'm closing the search window to avoid crashing Rained."):format(err))
-			rained.alert("Tile Search crashed D:")
-			show_tile_search = false
-		end,
-		function() return imgui.End() end, true
-	)
-end
-
-rained.gui.menuHook('Tools', function()
-	if(imgui.MenuItem_Bool("Tile Search")) then
-		show_tile_search = not show_tile_search
-		if (show_tile_search) then
-			setupTiles()
-		end
-	end
-end
-)
-
-rained.onUpdate(updateTileSearch);
---]]
 local autotile = rained.tiles.createAutotile("Tile Search Geometry", "Utilities")
 
 
