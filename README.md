@@ -1,5 +1,5 @@
 # RainedUtilities
-This is a set of utilities for the Rained level editor.
+This is a set of utilities for the [Rained level editor](https://github.com/pkhead/rained).
 
 ## Installation
 
