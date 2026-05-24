@@ -295,19 +295,49 @@ end
 
 local function selectTile(tile)
 
+	print(("Tile Search: Selecting tile '%s'"):format(tile.name))
+
 	local targetFile = path.join(rained.getDataDirectory(), 'LevelEditorProjects', "tile_search_preview")
 
 	for i = 1, rained.getDocumentCount() do
-		if (rained.getDocumentName(i) == "tile_search_preview") then rained.closeDocument(i) end
+		if (rained.getDocumentName(i) == "tile_search_preview") then
+			rained.closeDocument(i)
+			-- We must break to avoid crashing rained by checking an invalid document.
+			break;
+		end
 	end
+
 
 	local width = (tile.width + 1) * 3 + 24
 	local height = (tile.height + 1) * 3 + 8
+
+	local tile_center_pos = {x= width // 2, y= height // 2}
+	local tile_top_left = {x= tile_center_pos.x - tile.centerX, y= tile_center_pos.y - tile.centerY}
+
+
+	--print("Tile Search: Opening new level")
 	rained.newLevel(width, height, targetFile)
-	rained.tiles.placeTile(tile.name, width // 2, height // 2, 1, "geometry")
-	rained.view.viewX = ((width // 2) - (tile.width / 2)) * 20
-	rained.view.viewY = ((height // 2) - (tile.height / 2)) * 20
+
+	--[[
+	print("Tile Search: Placing background glass")
+	-- Place some tiles in the background to frame the tile.
+	for x = tile_top_left.x - 1, tile_top_left.x + tile.width do
+		for y = tile_top_left.y - 1, tile_top_left.y + tile.height do
+			rained.cells.setGeo(x, y, 1, GEO_TYPE.GLASS)
+		end
+	end
+	--]]
+
+	--print("Tile Search: Placing tile")
+	rained.tiles.placeTile(tile.name, tile_center_pos.x, tile_center_pos.y, 1, "geometry")
+
+
+	--print("Tile Search: Centering camera")
+	rained.view.viewX = (tile_top_left.x - 2) * 20
+	rained.view.viewY = (tile_top_left.y - 2) * 20
 	rained.view.viewZoom = 5.0
+
+	print(("Tile Search: Done selecting tile '%s'"):format(tile.name))
 end
 
 local function handleResultsTable()
